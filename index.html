@@ -34,7 +34,7 @@ function drawLands(){ $('#lands').innerHTML=topics.map((t,i)=>'<button class="la
 function openLand(i){islandChallenge=false;current=i;level=0;correct=0;$('#lesson').classList.add('active');$('#lesson').scrollIntoView({behavior:'smooth'});showQuestion()}
 function showQuestion(){selected=null;let q=banks[current][level];$('#stage-label').textContent=islandChallenge?'CRYSTAL CHALLENGE '+(got+1)+' / 5':'LAND '+(current+1)+' · QUESTION '+(level+1)+' / 5';$('#question-title').textContent=islandChallenge?'Earn your island crystal':topics[current];$('#prompt').textContent=q[0];$('#answers').innerHTML=q[1].map((a,i)=>'<button data-answer="'+i+'">'+String.fromCharCode(65+i)+'. '+a+'</button>').join('');document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{selected=+b.dataset.answer;document.querySelectorAll('[data-answer]').forEach(x=>x.classList.toggle('selected',x===b))});$('#feedback').textContent=islandChallenge?'Answer correctly to claim this crystal.':'';$('#progress').style.width=(level/5*100)+'%';$('#check').disabled=false;$('#next').disabled=true;$('#next').textContent=islandChallenge?'Claim crystal':'Continue →'}
 $('#check').onclick=()=>{if(selected===null){$('#feedback').textContent='Choose an answer first.';return}let q=banks[current][level];if(selected===q[2]){correct++;$('#feedback').textContent=islandChallenge?'Correct! Crystal energy restored. ✨':'Correct! Great reasoning. ⭐';$('#check').disabled=true;$('#next').disabled=false}else{$('#feedback').textContent=islandChallenge?'Not quite. Try again — you can do it!':'Not quite. Correct answer: '+q[1][q[2]]+'. Keep learning!';if(!islandChallenge){$('#check').disabled=true;$('#next').disabled=false}}};
-$('#next').onclick=()=>{if(islandChallenge){if(pendingCrystal!==null){gems[pendingCrystal].visible=false;got++;pendingCrystal=null;$('#gems').textContent='💎 '+got+' / 5 crystals';$('#status').textContent=got===5?'All five maths crystals earned! Reach the portal.':'Correct answer! Find the next crystal.'}$('#lesson').classList.remove('active');islandChallenge=false;active=true;return}if(level<4){level++;showQuestion()}else{progress[current]=true;localStorage.setItem('bq-grade7',JSON.stringify(progress));$('#feedback').textContent='Land cleared! You got '+correct+' / 5 correct.';$('#progress').style.width='100%';$('#next').disabled=true;drawLands()}};
+$('#next').onclick=()=>{if(islandChallenge){if(pendingCrystal!==null){if(gems[pendingCrystal])gems[pendingCrystal].visible=false;else if(typeof collected!=='undefined')collected.add(pendingCrystal);got++;pendingCrystal=null;$('#gems').textContent='💎 '+got+' / 5 crystals';$('#status').textContent=got===5?'All five maths crystals earned! Reach the portal.':'Correct answer! Find the next crystal.'}$('#lesson').classList.remove('active');islandChallenge=false;active=true;return}if(level<4){level++;showQuestion()}else{progress[current]=true;localStorage.setItem('bq-grade7',JSON.stringify(progress));$('#feedback').textContent='Land cleared! You got '+correct+' / 5 correct.';$('#progress').style.width='100%';$('#next').disabled=true;drawLands()}};
 $('#close').onclick=()=>{if(islandChallenge){$('#feedback').textContent='Solve this crystal challenge to continue exploring.';return}$('#lesson').classList.remove('active')};drawLands();
 // Maths Kingdom — polished island world, robust renderer and playable fallback
 const canvas=$('#world');
@@ -93,7 +93,7 @@ function setup3D(){
  portalDisc=new THREE.Mesh(new THREE.CircleGeometry(1.37,48),new THREE.MeshBasicMaterial({color:0x51dce8,transparent:true,opacity:.48,side:THREE.DoubleSide}));portalDisc.position.set(0,1.62,-.08);gate.add(portalDisc);
  portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.075,10,48),glow(0x9bfff2,0x21c9d2,2.4));portalRing.position.set(0,1.62,.02);gate.add(portalRing);
  player=new THREE.Group();scene.add(player);
- const body=new THREE.Mesh(new THREE.CapsuleGeometry(.28,.55,4,8),mat(0x4968d8));body.position.y=1.02;body.castShadow=true;player.add(body);
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.3,.38,1.0,12),mat(0x4968d8));body.position.y=1.02;body.castShadow=true;player.add(body);
  const head=new THREE.Mesh(new THREE.SphereGeometry(.31,20,16),mat(0xffd0a8));head.position.y=1.63;head.castShadow=true;player.add(head);
  const hair=new THREE.Mesh(new THREE.SphereGeometry(.33,16,10,0,Math.PI*2,0,Math.PI*.58),mat(0x302743));hair.position.y=1.77;player.add(hair);
  const pack=new THREE.Mesh(new THREE.BoxGeometry(.43,.48,.22),mat(0xe4a64d));pack.position.set(0,1.02,.34);player.add(pack);
@@ -108,9 +108,9 @@ function setup3D(){
  requestAnimationFrame(animate);
 }
 function setupFallback(){
- renderMode='2D';const ctx=canvas.getContext('2d');if(!ctx){$('#status').textContent='Your browser could not start the island renderer. Please reload Safari.';return}
- let px=0,pz=3.8,t=0;const stars=Array.from({length:90},(_,i)=>({x:(i*97%997)/997,y:(i*53%389)/389,r:.5+(i%3)}));
- function resize(){const d=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth,h=canvas.clientHeight;canvas.width=w*d;canvas.height=h*d;ctx.setTransform(d,0,0,d,0,0)}
+ renderMode='2D';const fallbackCanvas=document.createElement('canvas');fallbackCanvas.setAttribute('aria-label','Playable 2D island fallback');fallbackCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';canvas.parentElement.appendChild(fallbackCanvas);const ctx=fallbackCanvas.getContext('2d');if(!ctx){$('#status').textContent='Your browser could not start the island renderer. Please reload Safari.';return}
+ let px=0,pz=3.8,t=0;const collected=new Set();const stars=Array.from({length:90},(_,i)=>({x:(i*97%997)/997,y:(i*53%389)/389,r:.5+(i%3)}));
+ function resize(){const d=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth,h=canvas.clientHeight;fallbackCanvas.width=w*d;fallbackCanvas.height=h*d;ctx.setTransform(d,0,0,d,0,0)}
  new ResizeObserver(resize).observe(canvas);resize();
  function frame(){requestAnimationFrame(frame);const w=canvas.clientWidth,h=canvas.clientHeight;t+=.016;ctx.clearRect(0,0,w,h);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#82c7f4');sky.addColorStop(1,'#d8efff');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);stars.forEach(s=>{ctx.fillStyle='#ffffffaa';ctx.beginPath();ctx.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);ctx.fill()});
  const cx=w*.5,cy=h*.56,scale=Math.min(w/700,h/390);ctx.save();ctx.translate(cx,cy);ctx.scale(scale,scale);
@@ -122,11 +122,11 @@ function setupFallback(){
  // Portal gate
  ctx.strokeStyle='#ffd477';ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(-55,-65);ctx.lineTo(-55,-155);ctx.quadraticCurveTo(0,-220,55,-155);ctx.lineTo(55,-65);ctx.stroke();ctx.fillStyle='#51dce888';ctx.beginPath();ctx.ellipse(0,-105,42,68,0,0,Math.PI*2);ctx.fill();
  // Crystals
- positions.forEach(([x,y,z],i)=>{if(got>i)return;const gx=x*36,gy=z*10-85+Math.sin(t*2+i)*6;ctx.fillStyle=['#72fff1','#7abaff','#ffd66e','#d6a0ff','#80f2b0'][i];ctx.beginPath();ctx.moveTo(gx,gy-22);ctx.lineTo(gx+15,gy);ctx.lineTo(gx,gy+22);ctx.lineTo(gx-15,gy);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff';ctx.stroke()});
+ positions.forEach(([x,y,z],i)=>{if(collected.has(i))return;const gx=x*36,gy=z*10-85+Math.sin(t*2+i)*6;ctx.fillStyle=['#72fff1','#7abaff','#ffd66e','#d6a0ff','#80f2b0'][i];ctx.beginPath();ctx.moveTo(gx,gy-22);ctx.lineTo(gx+15,gy);ctx.lineTo(gx,gy+22);ctx.lineTo(gx-15,gy);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff';ctx.stroke()});
  // Player
  ctx.fillStyle='#4968d8';ctx.beginPath();ctx.roundRect(px*25-12, pz*9-78,24,34,8);ctx.fill();ctx.fillStyle='#ffd0a8';ctx.beginPath();ctx.arc(px*25,pz*9-91,12,0,Math.PI*2);ctx.fill();
  ctx.restore();
- if(active){const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;px=clamp(px+x/l*.12,-8,8);pz=clamp(pz+z/l*.12,-8,8);positions.forEach(([gx,gy,gz],i)=>{if(got<=i&&Math.hypot(px-gx,pz-gz)<1.15)beginCrystal(i)});if(got===5&&Math.hypot(px,pz+7)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Enter the gateway.'}}
+ if(active){const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;px=clamp(px+x/l*.12,-8,8);pz=clamp(pz+z/l*.12,-8,8);positions.forEach(([gx,gy,gz],i)=>{if(!collected.has(i)&&Math.hypot(px-gx,pz-gz)<1.15)beginCrystal(i)});if(got===5&&Math.hypot(px,pz+7)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Enter the gateway.'}}
  }
  frame();
 }
