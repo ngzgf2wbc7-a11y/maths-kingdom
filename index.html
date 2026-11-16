@@ -132,7 +132,7 @@ const portalDisc=new THREE.Mesh(new THREE.CircleGeometry(1.37,48),new THREE.Mesh
 const portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.075,10,48),glow(0x9bfff2,0x21c9d2,2.4));portalRing.position.set(0,1.62,.02);gate.add(portalRing);
 // Player kept intentionally simple in this art pass; next milestone is a custom animated hero
 const player=new THREE.Group();scene.add(player);
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.3,.62,4,8),mat(0x4968d8));body.position.y=.9;body.castShadow=true;player.add(body);
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.3,.38,1.0,12),mat(0x4968d8));body.position.y=.9;body.castShadow=true;player.add(body);
 const head=new THREE.Mesh(new THREE.SphereGeometry(.31,20,16),mat(0xffd0a8));head.position.y=1.55;head.castShadow=true;player.add(head);
 const hair=new THREE.Mesh(new THREE.SphereGeometry(.33,16,10,0,Math.PI*2,0,Math.PI*.58),mat(0x302743));hair.position.y=1.69;player.add(hair);
 const pack=new THREE.Mesh(new THREE.BoxGeometry(.43,.48,.22),mat(0xe4a64d));pack.position.set(0,.98,.34);player.add(pack);
