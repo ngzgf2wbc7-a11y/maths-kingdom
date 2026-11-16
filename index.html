@@ -36,23 +36,137 @@ function showQuestion(){selected=null;let q=banks[current][level];$('#stage-labe
 $('#check').onclick=()=>{if(selected===null){$('#feedback').textContent='Choose an answer first.';return}let q=banks[current][level];if(selected===q[2]){correct++;$('#feedback').textContent='Correct! Great reasoning. ⭐'}else $('#feedback').textContent='Not quite. Correct answer: '+q[1][q[2]]+'. Keep learning!';$('#check').disabled=true;$('#next').disabled=false};
 $('#next').onclick=()=>{if(level<4){level++;showQuestion()}else{progress[current]=true;localStorage.setItem('bq-grade7',JSON.stringify(progress));$('#feedback').textContent='Land cleared! You got '+correct+' / 5 correct.';$('#progress').style.width='100%';$('#next').disabled=true;drawLands()}};
 $('#close').onclick=()=>$('#lesson').classList.remove('active');drawLands();
-// Playable 3D island hub
-const canvas=$('#world'),scene=new THREE.Scene();scene.background=new THREE.Color(0x9bc9ec);scene.fog=new THREE.Fog(0x9bc9ec,20,55);
-const camera=new THREE.PerspectiveCamera(50,1,.1,100);camera.position.set(0,9,16);
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
-scene.add(new THREE.HemisphereLight(0xe6f7ff,0x43506e,2));const sun=new THREE.DirectionalLight(0xffedc7,2.4);sun.position.set(-5,12,7);sun.castShadow=true;scene.add(sun);
-const mat=(c,r=.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
-const island=new THREE.Mesh(new THREE.CylinderGeometry(10,8,2,9),mat(0x548b70));island.position.y=-1;island.castShadow=true;island.receiveShadow=true;scene.add(island);
-const top=new THREE.Mesh(new THREE.CylinderGeometry(9.7,9.7,.35,9),mat(0x86bb79));top.position.y=.05;top.receiveShadow=true;scene.add(top);
-const rim=new THREE.Mesh(new THREE.TorusGeometry(9.8,.13,8,60),new THREE.MeshStandardMaterial({color:0x62e8e0,emissive:0x168b9b,emissiveIntensity:1.4}));rim.rotation.x=Math.PI/2;rim.position.y=-.55;scene.add(rim);
-for(let i=0;i<13;i++){let a=i/13*Math.PI*2,x=Math.cos(a)*7.6,z=Math.sin(a)*7.6;let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16,.23,1,6),mat(0x76513b));trunk.position.set(x,.65,z);scene.add(trunk);let crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.85,1),mat(i%2?0x287e65:0x41956d));crown.position.set(x,1.55,z);crown.castShadow=true;scene.add(crown)}
-const gate=new THREE.Group();gate.position.set(0,.2,-7.3);scene.add(gate);let arch=new THREE.Mesh(new THREE.TorusGeometry(1.25,.16,10,32,Math.PI),new THREE.MeshStandardMaterial({color:0xffd16a,emissive:0x9b5c12,emissiveIntensity:1.3}));arch.rotation.z=Math.PI;gate.add(arch);let portal=new THREE.Mesh(new THREE.CircleGeometry(1.12,32),new THREE.MeshBasicMaterial({color:0x4de5df,transparent:true,opacity:.32,side:THREE.DoubleSide}));portal.position.z=-.03;gate.add(portal);
-const player=new THREE.Group();scene.add(player);let body=new THREE.Mesh(new THREE.CylinderGeometry(.32,.4,1.0,10),mat(0x5669d8));body.position.y=.65;player.add(body);let head=new THREE.Mesh(new THREE.SphereGeometry(.32,16,12),mat(0xffd0a8));head.position.y=1.35;player.add(head);let hair=new THREE.Mesh(new THREE.SphereGeometry(.34,12,8,0,Math.PI*2,0,Math.PI*.55),mat(0x302743));hair.position.y=1.48;player.add(hair);
-let gems=[],positions=[[-4,0,-3],[4,0,-4],[-5,0,4],[5,0,4],[0,0,6]];positions.forEach(([x,y,z])=>{let m=new THREE.Mesh(new THREE.OctahedronGeometry(.4),new THREE.MeshStandardMaterial({color:0x72fff1,emissive:0x20b8b4,emissiveIntensity:2}));m.position.set(x,.9,z);scene.add(m);gems.push(m)});
-let keys={},active=false,got=0,ready=false;function reset(){active=true;got=0;ready=false;player.position.set(0,0,3.8);gems.forEach(g=>g.visible=true);$('#gems').textContent='💎 0 / 5 crystals';$('#status').textContent='Find the five glowing crystals';$('#portal').disabled=true;$('#start').textContent='↻ Restart island'}
-$('#start').onclick=reset;$('#portal').onclick=()=>{if(ready){active=false;document.querySelector('.section-title').scrollIntoView({behavior:'smooth'});$('#status').textContent='Portal unlocked — choose a land below!'}};
-window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-let pointer=null;canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(pointer){keys.tx=Math.max(-1,Math.min(1,(e.clientX-pointer.x)/45));keys.tz=Math.max(-1,Math.min(1,(e.clientY-pointer.y)/45))}});canvas.addEventListener('pointerup',()=>{pointer=null;keys.tx=keys.tz=0});canvas.addEventListener('pointercancel',()=>{pointer=null;keys.tx=keys.tz=0});
-function resize(){let w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(canvas);resize();
-let last=performance.now();function animate(now){requestAnimationFrame(animate);let dt=Math.min((now-last)/1000,.04);last=now;gems.forEach((g,i)=>{g.rotation.y+=dt*1.4;g.position.y=.9+Math.sin(now*.002+i)*.16});portal.rotation.z=Math.sin(now*.001)*.1;if(active){let x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;if(x||z){player.position.x+=x/l*5*dt;player.position.z+=z/l*5*dt;player.rotation.y=Math.atan2(x,z)}player.position.x=THREE.MathUtils.clamp(player.position.x,-8.5,8.5);player.position.z=THREE.MathUtils.clamp(player.position.z,-8.5,8.5);gems.forEach(g=>{if(g.visible&&player.position.distanceTo(g.position)<1){g.visible=false;got++;$('#gems').textContent='💎 '+got+' / 5 crystals';$('#status').textContent=got===5?'All crystals found! Reach the portal.':'Crystal collected — keep exploring!'}});if(got===5&&Math.hypot(player.position.x,player.position.z+7.3)<2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Press Enter portal.'}}camera.position.lerp(new THREE.Vector3(player.position.x*.3,8,player.position.z+13),.06);camera.lookAt(player.position.x,0,player.position.z-1);renderer.render(scene,camera)}requestAnimationFrame(animate);
-</script></body></html>
+// Maths Kingdom — island environment art pass
+const canvas=$('#world'),scene=new THREE.Scene();
+scene.background=new THREE.Color(0x8fc8f0);
+scene.fog=new THREE.Fog(0x8fc8f0,27,82);
+const camera=new THREE.PerspectiveCamera(48,1,.1,140);
+camera.position.set(0,10,17);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+scene.add(new THREE.HemisphereLight(0xeaf8ff,0x56634e,2.1));
+const sun=new THREE.DirectionalLight(0xffefcf,3.1);
+sun.position.set(-12,20,9);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-18;sun.shadow.camera.right=18;
+sun.shadow.camera.top=18;sun.shadow.camera.bottom=-18;
+sun.shadow.bias=-.00025;scene.add(sun);
+const fill=new THREE.DirectionalLight(0x9bcfff,.75);fill.position.set(10,7,-10);scene.add(fill);
+const mat=(c,r=.86,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const glow=(c,e,i=1)=>new THREE.MeshStandardMaterial({color:c,emissive:e,emissiveIntensity:i,roughness:.3});
+const island=new THREE.Group();scene.add(island);
+// Layered rocky floating island with a broad grassy crown
+const rockMat=[mat(0x665b66),mat(0x796a70),mat(0x514e62)];
+const core=new THREE.Mesh(new THREE.CylinderGeometry(10,7.25,3.1,12,3),rockMat[0]);
+core.position.y=-1.35;core.castShadow=true;core.receiveShadow=true;island.add(core);
+for(let i=0;i<30;i++){
+ const a=i/30*Math.PI*2,r=7.7+(i%4)*.45;
+ const b=new THREE.Mesh(new THREE.DodecahedronGeometry(.9+(i%3)*.22,0),rockMat[i%3]);
+ b.position.set(Math.cos(a)*r,-1.25-(i%4)*.42,Math.sin(a)*r);
+ b.rotation.set(i*.7,i*.43,i*.21);b.scale.y=1.15;b.castShadow=true;island.add(b);
+}
+const soil=new THREE.Mesh(new THREE.CylinderGeometry(9.8,9.8,.5,12),mat(0x765c49));
+soil.position.y=.12;soil.receiveShadow=true;island.add(soil);
+const grass=new THREE.Mesh(new THREE.CylinderGeometry(9.72,9.72,.34,12),mat(0x79b96f));
+grass.position.y=.48;grass.receiveShadow=true;island.add(grass);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(9.76,.13,10,80),glow(0x73f5df,0x1aa99b,1.5));
+rim.rotation.x=Math.PI/2;rim.position.y=-.35;island.add(rim);
+// Curving golden stepping-stone trail to the portal
+const pathMat=mat(0xd5b77a,.95);
+for(let i=0;i<11;i++){
+ const t=i/10,x=Math.sin(t*Math.PI*.9)*2.1,z=4.8-t*10.2;
+ const stone=new THREE.Mesh(new THREE.CylinderGeometry(.48,.55,.12,7),pathMat);
+ stone.position.set(x,.69,z);stone.rotation.y=t*1.7;stone.receiveShadow=true;island.add(stone);
+}
+// Waterfall ribbons down the front and sides
+const waterMat=new THREE.MeshStandardMaterial({color:0x59d9ef,emissive:0x137baf,emissiveIntensity:.65,transparent:true,opacity:.82,roughness:.18,metalness:.12,side:THREE.DoubleSide});
+for(const [x,z,rot,h] of [[-3.5,-7.1,-.28,4.6],[5.8,-3.1,.52,3.8],[-6.5,1.5,-.7,3.4]]){
+ const sheet=new THREE.Mesh(new THREE.PlaneGeometry(1.15,h),waterMat);
+ sheet.position.set(x,-1.45,z);sheet.rotation.y=rot;island.add(sheet);
+ for(let k=0;k<4;k++){const drop=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),glow(0xa4f6ff,0x4ccce9,.8));drop.position.set(x+(k-1.5)*.2,-.5-k*.7,z+.08);island.add(drop)}
+}
+// Trees: layered low-poly crowns, trunks and small leaf highlights
+for(let i=0;i<19;i++){
+ const a=i/19*Math.PI*2,r=6.9+(i%3)*.65,x=Math.cos(a)*r,z=Math.sin(a)*r;
+ const tree=new THREE.Group();tree.position.set(x,.65,z);tree.rotation.y=a;
+ const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.13,.22,1.05,7),mat(0x795039));trunk.position.y=.48;trunk.castShadow=true;tree.add(trunk);
+ for(let j=0;j<3;j++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.65-j*.08,1),mat([0x287d58,0x369765,0x55a96c][(i+j)%3]));crown.position.set((j%2-.5)*.22,1.12+j*.37,0);crown.scale.set(1,1.05,.92);crown.castShadow=true;tree.add(crown)}
+ island.add(tree);
+}
+// Bushes, flowers and tiny glowing mushrooms enrich the walkable meadow
+for(let i=0;i<46;i++){
+ const a=i*2.399,r=2.2+(i%7)*.83,x=Math.cos(a)*r,z=Math.sin(a)*r;
+ if(Math.hypot(x,z)>8.7)continue;
+ const bush=new THREE.Mesh(new THREE.IcosahedronGeometry(.22+(i%3)*.07,0),mat(i%2?0x3d965f:0x68ad68));
+ bush.position.set(x,.77,z);bush.scale.y=.7;bush.castShadow=true;island.add(bush);
+ if(i%3===0){const stem=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.25,5),mat(0x397b48));stem.position.set(x,.91,z);island.add(stem);const bloom=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),mat([0xffd36f,0xff91bb,0x9ca8ff][i%3]));bloom.position.set(x,1.08,z);island.add(bloom)}
+}
+// Floating cloud puffs around the island
+const clouds=[];
+for(let i=0;i<12;i++){
+ const g=new THREE.Group(),x=Math.cos(i*2.4)*(14+i%3*2),z=Math.sin(i*2.4)*(13+i%4*2);
+ for(let j=0;j<4;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1.15-(j%2)*.18,12,9),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,transparent:true,opacity:.82}));puff.position.set((j-1.5)*.78,(j%2)*.22,0);puff.scale.y=.55;g.add(puff)}
+ g.position.set(x,3+(i%4)*1.1,z);scene.add(g);clouds.push({g,base:x,phase:i});
+}
+// Small distant floating islets for depth
+for(let i=0;i<5;i++){
+ const a=i/5*Math.PI*2,x=Math.cos(a)*23,z=Math.sin(a)*22;
+ const rock=new THREE.Mesh(new THREE.CylinderGeometry(2.1,1.2,1.2,7),mat(0x766a77));rock.position.set(x,-1.5+(i%2),z);rock.rotation.z=.12;scene.add(rock);
+ const turf=new THREE.Mesh(new THREE.CylinderGeometry(2.08,2.08,.18,7),mat(0x79b96f));turf.position.set(x,-.82+(i%2),z);scene.add(turf);
+}
+// Monumental portal with stone pillars, gold trim, animated energy disc
+const gate=new THREE.Group();gate.position.set(0,.75,-7.15);scene.add(gate);
+const stone=mat(0x66718c),gold=glow(0xffd477,0x9b5b13,1.25);
+for(const x of [-1.48,1.48]){
+ const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.24,.34,3.35,8),stone);pillar.position.set(x,1.48,0);pillar.castShadow=true;gate.add(pillar);
+ const cap=new THREE.Mesh(new THREE.BoxGeometry(.82,.28,.72),gold);cap.position.set(x,3.2,0);gate.add(cap);
+ const rune=new THREE.Mesh(new THREE.BoxGeometry(.08,.75,.06),glow(0x9ffdf1,0x25c9c0,2));rune.position.set(x,1.5,.34);gate.add(rune);
+}
+const arch=new THREE.Mesh(new THREE.TorusGeometry(1.55,.2,12,48,Math.PI),gold);arch.rotation.z=Math.PI;arch.position.y=3.1;gate.add(arch);
+const portalDisc=new THREE.Mesh(new THREE.CircleGeometry(1.37,48),new THREE.MeshBasicMaterial({color:0x51dce8,transparent:true,opacity:.48,side:THREE.DoubleSide}));portalDisc.position.set(0,1.62,-.08);gate.add(portalDisc);
+const portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.075,10,48),glow(0x9bfff2,0x21c9d2,2.4));portalRing.position.set(0,1.62,.02);gate.add(portalRing);
+// Player kept intentionally simple in this art pass; next milestone is a custom animated hero
+const player=new THREE.Group();scene.add(player);
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(.3,.62,4,8),mat(0x4968d8));body.position.y=.9;body.castShadow=true;player.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.31,20,16),mat(0xffd0a8));head.position.y=1.55;head.castShadow=true;player.add(head);
+const hair=new THREE.Mesh(new THREE.SphereGeometry(.33,16,10,0,Math.PI*2,0,Math.PI*.58),mat(0x302743));hair.position.y=1.69;player.add(hair);
+const pack=new THREE.Mesh(new THREE.BoxGeometry(.43,.48,.22),mat(0xe4a64d));pack.position.set(0,.98,.34);player.add(pack);
+const gems=[],positions=[[-4,0,-3],[4,0,-4],[-5,0,4],[5,0,4],[0,0,6]];
+positions.forEach(([x,y,z],i)=>{const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.43),glow([0x72fff1,0x7abaff,0xffd66e,0xd6a0ff,0x80f2b0][i],0x20b8b4,1.8));gem.position.set(x,1.05,z);gem.castShadow=true;scene.add(gem);const halo=new THREE.Mesh(new THREE.TorusGeometry(.55,.025,6,28),glow(0xaafff6,0x25bfc0,1.5));halo.position.set(x,.83,z);halo.rotation.x=Math.PI/2;scene.add(halo);gems.push(gem)});
+let keys={},active=false,got=0,ready=false;
+function reset(){active=true;got=0;ready=false;player.position.set(0,0,3.8);gems.forEach(g=>g.visible=true);$('#gems').textContent='💎 0 / 5 crystals';$('#status').textContent='Explore the meadow and find five crystals';$('#portal').disabled=true;$('#start').textContent='↻ Restart island'}
+$('#start').onclick=reset;
+$('#portal').onclick=()=>{if(ready){active=false;document.querySelector('.section-title').scrollIntoView({behavior:'smooth'});$('#status').textContent='Portal unlocked — choose a land below!'}};
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});
+window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let pointer=null;canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(pointer){keys.tx=Math.max(-1,Math.min(1,(e.clientX-pointer.x)/45));keys.tz=Math.max(-1,Math.min(1,(e.clientY-pointer.y)/45))}});
+canvas.addEventListener('pointerup',()=>{pointer=null;keys.tx=keys.tz=0});canvas.addEventListener('pointercancel',()=>{pointer=null;keys.tx=keys.tz=0});
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(canvas);resize();
+let last=performance.now();
+function animate(now){
+ requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;
+ gems.forEach((g,i)=>{g.rotation.y+=dt*1.35;g.position.y=1.05+Math.sin(now*.0018+i*1.7)*.17});
+ portalRing.rotation.z=Math.sin(now*.001)*.13;portalDisc.material.opacity=.38+Math.sin(now*.002)*.08;
+ clouds.forEach(c=>{c.g.position.x=c.base+Math.sin(now*.00018+c.phase)*.7});
+ if(active){
+  const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0);
+  const z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0);
+  const l=Math.hypot(x,z)||1;
+  if(x||z){player.position.x+=x/l*5*dt;player.position.z+=z/l*5*dt;player.rotation.y=Math.atan2(x,z)}
+  player.position.x=THREE.MathUtils.clamp(player.position.x,-8.45,8.45);
+  player.position.z=THREE.MathUtils.clamp(player.position.z,-8.45,8.45);
+  gems.forEach(g=>{if(g.visible&&player.position.distanceTo(g.position)<1.15){g.visible=false;got++;$('#gems').textContent='💎 '+got+' / 5 crystals';$('#status').textContent=got===5?'All crystals found! Reach the glowing portal.':'Crystal collected — keep exploring!'}});
+  if(got===5&&Math.hypot(player.position.x,player.position.z+7.15)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Press Enter portal.'}
+ }
+ const target=new THREE.Vector3(player.position.x*.28,8.6,player.position.z+14.2);
+ camera.position.lerp(target,.055);camera.lookAt(player.position.x,.3,player.position.z-1.1);
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
