@@ -66,3 +66,14 @@ test('both 3D and 2D fallback renderers and restart reset are present', () => {
   assert.match(html, /resetFallbackPosition\(\);/);
   assert.match(html, /gemHalos\.forEach\(h=>h\.visible=true\)/);
 });
+
+test('browser module JavaScript passes the Node syntax parser', () => {
+  const moduleScript = html.match(/<script type="module">([\\s\\S]*?)<\\/script>/);
+  assert.ok(moduleScript, 'module script exists');
+  const { spawnSync } = require('node:child_process');
+  const result = spawnSync(process.execPath, ['--check', '--input-type=module'], {
+    input: moduleScript[1],
+    encoding: 'utf8'
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
