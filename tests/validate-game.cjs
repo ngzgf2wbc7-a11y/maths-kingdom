@@ -68,11 +68,16 @@ test('both 3D and 2D fallback renderers and restart reset are present', () => {
 });
 
 test('browser module JavaScript passes the Node syntax parser', () => {
-  const moduleScript = html.match(/<script type="module">([\\s\\S]*?)<\\/script>/);
-  assert.ok(moduleScript, 'module script exists');
+  const moduleTag = '<script type="module">';
+  const moduleStart = html.indexOf(moduleTag);
+  assert.notEqual(moduleStart, -1, 'module script exists');
+  const bodyStart = html.indexOf('>', moduleStart) + 1;
+  const bodyEnd = html.indexOf('</script>', bodyStart);
+  assert.ok(bodyEnd > bodyStart, 'module script has a closing tag');
+  const moduleScript = html.slice(bodyStart, bodyEnd);
   const { spawnSync } = require('node:child_process');
   const result = spawnSync(process.execPath, ['--check', '--input-type=module'], {
-    input: moduleScript[1],
+    input: moduleScript,
     encoding: 'utf8'
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
