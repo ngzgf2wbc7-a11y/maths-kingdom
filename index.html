@@ -148,7 +148,7 @@ function setup3D(){
 }
 function setupFallback(){
  renderMode='2D';const fallbackCanvas=document.createElement('canvas');fallbackCanvas.setAttribute('aria-label','Playable 2D island fallback');fallbackCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';canvas.parentElement.appendChild(fallbackCanvas);const ctx=fallbackCanvas.getContext('2d');if(!ctx){$('#status').textContent='Your browser could not start the island renderer. Please reload Safari.';return}
- let px=0,pz=3.8,t=0;resetFallbackPosition=()=>{px=0;pz=3.8};const stars=Array.from({length:90},(_,i)=>({x:(i*97%997)/997,y:(i*53%389)/389,r:.5+(i%3)}));
+ let px=0,pz=3.8,t=0;const fallbackTreeColliders=[{x:-2.8,z:3.22,radius:.52},{x:2.6,z:1,radius:.52}];resetFallbackPosition=()=>{px=0;pz=3.8};const stars=Array.from({length:90},(_,i)=>({x:(i*97%997)/997,y:(i*53%389)/389,r:.5+(i%3)}));
  function resize(){const d=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth,h=canvas.clientHeight;fallbackCanvas.width=w*d;fallbackCanvas.height=h*d;ctx.setTransform(d,0,0,d,0,0)}
  new ResizeObserver(resize).observe(canvas);resize();
  function frame(){requestAnimationFrame(frame);const w=canvas.clientWidth,h=canvas.clientHeight;t+=.016;ctx.clearRect(0,0,w,h);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#82c7f4');sky.addColorStop(1,'#d8efff');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);stars.forEach(s=>{ctx.fillStyle='#ffffffaa';ctx.beginPath();ctx.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);ctx.fill()});
@@ -189,7 +189,7 @@ function setupFallback(){
  // Player
  ctx.fillStyle='#4968d8';ctx.beginPath();ctx.roundRect(px*25-12, pz*9-78,24,34,8);ctx.fill();ctx.fillStyle='#ffd0a8';ctx.beginPath();ctx.arc(px*25,pz*9-91,12,0,Math.PI*2);ctx.fill();
  ctx.restore();
- if(active){const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;px+=x/l*.12;pz+=z/l*.12;const islandEdge=Math.hypot(px,pz);if(islandEdge>8.1){px=px/islandEdge*8.1;pz=pz/islandEdge*8.1;}positions.forEach(([gx,gy,gz],i)=>{if(!fallbackCollected.has(i)&&Math.hypot(px-gx,pz-gz)<1.15)beginCrystal(i)});if(got===5&&Math.hypot(px,pz+3)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Enter the gateway.'}}
+ if(active){const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;const step=.12,nextX=px+x/l*step,nextZ=pz+z/l*step;if(!fallbackTreeColliders.some(o=>Math.hypot(nextX-o.x,pz-o.z)<o.radius))px=nextX;if(!fallbackTreeColliders.some(o=>Math.hypot(px-o.x,nextZ-o.z)<o.radius))pz=nextZ;const islandEdge=Math.hypot(px,pz);if(islandEdge>8.1){px=px/islandEdge*8.1;pz=pz/islandEdge*8.1;}positions.forEach(([gx,gy,gz],i)=>{if(!fallbackCollected.has(i)&&Math.hypot(px-gx,pz-gz)<1.15)beginCrystal(i)});if(got===5&&Math.hypot(px,pz+3)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Enter the gateway.'}}
  }
  frame();
 }
