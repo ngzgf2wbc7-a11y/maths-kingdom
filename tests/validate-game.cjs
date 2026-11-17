@@ -113,3 +113,17 @@ test('restart clears crystal state and restores collected visuals', () => {
   assert.ok(reset.includes('gemHalos.forEach(h=>h.visible=true)'));
   assert.ok(reset.includes('gems.forEach(g=>g.visible=true)'));
 });
+
+test('five crystals reveal a floating waypoint in both renderers', () => {
+  assert.ok(html.includes('waypoint.visible=got===5&&!ready'));
+  assert.ok(html.includes('waypoint.lookAt(0,1.8,-7.15)'));
+  assert.ok(html.includes('Floating waypoint arrow appears only after all five crystals are earned.'));
+  assert.ok(html.includes('if(got===5&&!ready)'));
+});
+
+test('portal glow intensifies after unlocking and adds animated energy effects', () => {
+  assert.ok(html.includes('portalLight.intensity=ready?3.4:0'));
+  assert.ok(html.includes('portalRing.material.emissiveIntensity=ready?5.2:3.2'));
+  assert.ok(html.includes('portalSparks.children.forEach'));
+  assert.ok(html.includes("ctx.shadowBlur=got===5?34:18"));
+});
