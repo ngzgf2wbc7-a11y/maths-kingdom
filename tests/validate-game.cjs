@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const html = fs.readFileSync(new URL('../index.html', 'file://' + __filename), 'utf8');
 
 function declaration(name, nextName) {
-  const start = html.indexOf('const ' + name + (name === 'topics' ? '=' : ' ='));
+  const start = html.search(new RegExp('const\\\\s+' + name + '\\\\s*='));
   assert.notEqual(start, -1, name + ' declaration exists');
   const end = nextName ? html.indexOf('const ' + nextName, start + 1) : html.indexOf(';', start);
   assert.notEqual(end, -1, name + ' declaration ends');
