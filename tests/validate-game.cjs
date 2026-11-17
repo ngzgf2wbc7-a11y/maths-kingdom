@@ -14,7 +14,7 @@ function declaration(name, nextName) {
   return vm.runInNewContext('(' + source + ')');
 }
 
-const topics = declaration('topics', 'banks');
+const topics = declaration('topics', 'concepts');
 const banks = declaration('banks', 'quizBanks');
 const quizBanks = declaration('quizBanks', ''); 
 
