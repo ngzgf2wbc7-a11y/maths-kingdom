@@ -152,3 +152,12 @@ test('3D player movement checks tree collisions on both movement axes', () => {
   assert.ok(html.includes('treeColliders.some(o=>Math.hypot(nextX-o.x,player.position.z-o.z)<o.radius)'));
   assert.ok(html.includes('treeColliders.some(o=>Math.hypot(player.position.x-o.x,nextZ-o.z)<o.radius)'));
 });
+
+
+test('each of the ten lands provides a Grade 7 concept explanation', () => {
+  const concepts = declaration('concepts', 'banks');
+  assert.equal(concepts.length, 10);
+  assert.ok(concepts.every(note => typeof note === 'string' && note.length > 80));
+  assert.ok(html.includes('id="concept"'));
+  assert.ok(html.includes("$('#concept').textContent=(phase==='learn'||islandChallenge)?concepts[current]"));
+});
