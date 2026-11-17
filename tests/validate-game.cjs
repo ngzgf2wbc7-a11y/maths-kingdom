@@ -10,7 +10,7 @@ function declaration(name, nextName) {
   assert.notEqual(start, -1, name + ' declaration exists');
   const end = nextName ? html.indexOf('const ' + nextName, start + 1) : html.indexOf(';', start);
   assert.notEqual(end, -1, name + ' declaration ends');
-  const source = html.slice(start, end).replace(/^const\\s+\\w+\\s*=\\s*/, '').trim().replace(/;$/, '');
+  const source = html.slice(start, end).replace(/^const\s+\w+\s*=\s*/, '').trim().replace(/;$/, '');
   return vm.runInNewContext('(' + source + ')');
 }
 
@@ -47,7 +47,7 @@ test('quiz pass threshold is three correct answers out of five', () => {
 
 test('fallback crystal drawing and player use the same projection', () => {
   assert.match(html, /const gx=x\*25,gy=z\*9-78/);
-  assert.match(html, /roundRect\(px\*25-12,\\s*pz\*9-78/);
+  assert.match(html, /roundRect\(px\*25-12,\s*pz\*9-78/);
 });
 
 test('fallback portal unlock is tied to the drawn gateway coordinates', () => {
