@@ -38,7 +38,7 @@ $('#next').onclick=()=>{if(islandChallenge){if(pendingCrystal!==null){if(gems[pe
 $('#close').onclick=()=>{if(islandChallenge){$('#feedback').textContent='Solve this crystal challenge to continue exploring.';return}$('#lesson').classList.remove('active')};drawLands();
 // Maths Kingdom — polished island world, robust renderer and playable fallback
 const canvas=$('#world');
-let active=false,got=0,ready=false,keys={},pointer=null,pendingCrystal=null;
+let active=false,got=0,ready=false,keys={},pointer=null;
 const positions=[[-4,0,-3],[4,0,-4],[-5,0,4],[5,0,4],[0,0,6]];
 let renderMode='3D',renderer=null,scene=null,camera=null,player=null,gems=[],portalRing=null,portalDisc=null,clouds=[],fallbackCollected=new Set();
 function beginCrystal(i){
