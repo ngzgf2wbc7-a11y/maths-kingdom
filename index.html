@@ -108,7 +108,16 @@ function setup3D(){
  for(const x of [-1.48,1.48]){const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.24,.34,3.35,8),stone);pillar.position.set(x,1.48,0);pillar.castShadow=true;gate.add(pillar);const cap=new THREE.Mesh(new THREE.BoxGeometry(.82,.28,.72),gold);cap.position.set(x,3.2,0);gate.add(cap);const rune=new THREE.Mesh(new THREE.BoxGeometry(.08,.75,.06),glow(0x9ffdf1,0x25c9c0,2));rune.position.set(x,1.5,.34);gate.add(rune)}
  const arch=new THREE.Mesh(new THREE.TorusGeometry(1.55,.2,12,48,Math.PI),gold);arch.rotation.z=Math.PI;arch.position.y=3.1;gate.add(arch);
  portalDisc=new THREE.Mesh(new THREE.CircleGeometry(1.37,48),new THREE.MeshBasicMaterial({color:0x51dce8,transparent:true,opacity:.48,side:THREE.DoubleSide}));portalDisc.position.set(0,1.62,-.08);gate.add(portalDisc);
- portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.075,10,48),glow(0x9bfff2,0x21c9d2,2.4));portalRing.position.set(0,1.62,.02);gate.add(portalRing);
+ portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.075,10,48),glow(0x9bfff2,0x21c9d2,3.2));portalRing.position.set(0,1.62,.02);gate.add(portalRing);
+ const portalHalo=new THREE.Mesh(new THREE.TorusGeometry(1.48,.055,10,64),glow(0xffdf8a,0xffa928,2.1));portalHalo.position.set(0,1.62,-.02);gate.add(portalHalo);
+ const portalLight=new THREE.PointLight(0x65fff0,0,8,2);portalLight.position.set(0,1.8,1);gate.add(portalLight);
+ const portalSparks=new THREE.Group();gate.add(portalSparks);
+ for(let i=0;i<18;i++){const spark=new THREE.Mesh(new THREE.SphereGeometry(.045+(i%3)*.018,8,6),glow(i%2?0xffdf8a:0x9bfff2,0x43d9d2,2));spark.userData={phase:i/18*Math.PI*2,radius:1.55+(i%3)*.18};portalSparks.add(spark)}
+ const waypoint=new THREE.Group();waypoint.visible=false;scene.add(waypoint);
+ const arrowMat=glow(0xffdf72,0x9c5c08,2.8);
+ const arrowShaft=new THREE.Mesh(new THREE.CylinderGeometry(.075,.11,.82,10),arrowMat);arrowShaft.rotation.x=Math.PI/2;arrowShaft.position.z=.12;waypoint.add(arrowShaft);
+ const arrowHead=new THREE.Mesh(new THREE.ConeGeometry(.25,.48,10),arrowMat);arrowHead.rotation.x=-Math.PI/2;arrowHead.position.z=-.48;waypoint.add(arrowHead);
+ const arrowGlow=new THREE.Mesh(new THREE.TorusGeometry(.31,.035,8,24),glow(0x9bfff2,0x21c9d2,2));arrowGlow.rotation.x=Math.PI/2;arrowGlow.position.y=-.45;waypoint.add(arrowGlow);
  player=new THREE.Group();scene.add(player);
  const body=new THREE.Mesh(new THREE.CylinderGeometry(.3,.38,1.0,12),mat(0x4968d8));body.position.y=1.02;body.castShadow=true;player.add(body);
  const head=new THREE.Mesh(new THREE.SphereGeometry(.31,20,16),mat(0xffd0a8));head.position.y=1.63;head.castShadow=true;player.add(head);
@@ -119,7 +128,7 @@ function setup3D(){
  function resize(){const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
  new ResizeObserver(resize).observe(canvas);window.addEventListener('resize',resize);resize();
  let last=performance.now();
- function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;gems.forEach((g,i)=>{g.rotation.y+=dt*1.35;g.position.y=1.05+Math.sin(now*.0018+i*1.7)*.17});portalRing.rotation.z=Math.sin(now*.001)*.13;portalDisc.material.opacity=.38+Math.sin(now*.002)*.08;clouds.forEach(c=>c.g.position.x=c.base+Math.sin(now*.00018+c.phase)*.7);mathClouds.forEach(c=>{c.s.position.y=c.baseY+Math.sin(now*.0007+c.phase)*.28;c.s.material.opacity=.72+Math.sin(now*.001+c.phase)*.18});numberOrbit.rotation.z=now*.00045;symbolOrbit.rotation.z=-now*.00032;
+ function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;gems.forEach((g,i)=>{g.rotation.y+=dt*1.35;g.position.y=1.05+Math.sin(now*.0018+i*1.7)*.17});portalRing.rotation.z=Math.sin(now*.001)*.13;portalHalo.rotation.z=-now*.00042;portalHalo.material.emissiveIntensity=ready?3.8:2.1;portalRing.material.emissiveIntensity=ready?5.2:3.2;portalLight.intensity=ready?3.4:0;portalDisc.material.opacity=(ready?.58:.38)+Math.sin(now*.002)*.08;portalSparks.children.forEach(p=>{const a=now*.0012+p.userData.phase;p.position.set(Math.cos(a)*p.userData.radius,1.62+Math.sin(a*1.7)*.48,Math.sin(a)*.12);p.scale.setScalar(ready?1.35:1)});waypoint.visible=got===5&&!ready;if(waypoint.visible&&player){waypoint.position.set(player.position.x,player.position.y+3.15,player.position.z);waypoint.lookAt(0,1.8,-7.15);waypoint.position.y+=Math.sin(now*.004)*.12;waypoint.rotation.z=Math.sin(now*.002)*.08;}clouds.forEach(c=>c.g.position.x=c.base+Math.sin(now*.00018+c.phase)*.7);mathClouds.forEach(c=>{c.s.position.y=c.baseY+Math.sin(now*.0007+c.phase)*.28;c.s.material.opacity=.72+Math.sin(now*.001+c.phase)*.18});numberOrbit.rotation.z=now*.00045;symbolOrbit.rotation.z=-now*.00032;
  if(active){const x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+(keys.tx||0),z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+(keys.tz||0),l=Math.hypot(x,z)||1;if(x||z){player.position.x+=x/l*5*dt;player.position.z+=z/l*5*dt;player.rotation.y=Math.atan2(x,z)}player.position.x=clamp(player.position.x,-8.45,8.45);player.position.z=clamp(player.position.z,-8.45,8.45);gems.forEach((g,i)=>{if(g.visible&&pendingCrystal===null&&Math.hypot(player.position.x-g.position.x,player.position.z-g.position.z)<1.15)beginCrystal(i)});if(got===5&&Math.hypot(player.position.x,player.position.z+7.15)<2.2){ready=true;$('#portal').disabled=false;$('#status').textContent='Portal ready! Enter the gateway.'}}
  const target=new THREE.Vector3(player.position.x*.28,8.6,player.position.z+14.2);camera.position.lerp(target,.055);camera.lookAt(player.position.x,.3,player.position.z-1.1);renderer.render(scene,camera)}
  requestAnimationFrame(animate);
@@ -154,10 +163,16 @@ function setupFallback(){
    ctx.font='800 20px system-ui';ctx.fillText(n,x,y);ctx.restore();
  }
  ctx.restore();
- // Portal gate
- ctx.strokeStyle='#ffd477';ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(-55,-65);ctx.lineTo(-55,-155);ctx.quadraticCurveTo(0,-220,55,-155);ctx.lineTo(55,-65);ctx.stroke();ctx.fillStyle='#51dce888';ctx.beginPath();ctx.ellipse(0,-105,42,68,0,0,Math.PI*2);ctx.fill();
+ // Portal gate with a brighter unlocked glow.
+ ctx.save();ctx.shadowColor=got===5?'#fff0a0':'#71fff1';ctx.shadowBlur=got===5?34:18;
+ ctx.strokeStyle=got===5?'#fff0a0':'#ffd477';ctx.lineWidth=got===5?17:13;ctx.beginPath();ctx.moveTo(-55,-65);ctx.lineTo(-55,-155);ctx.quadraticCurveTo(0,-220,55,-155);ctx.lineTo(55,-65);ctx.stroke();ctx.restore();ctx.save();ctx.shadowColor='#72fff1';ctx.shadowBlur=got===5?38:22;ctx.fillStyle=got===5?'#8cfff0aa':'#51dce888';ctx.beginPath();ctx.ellipse(0,-105,42,68,0,0,Math.PI*2);ctx.fill();ctx.restore();
  // Crystals
  positions.forEach(([x,y,z],i)=>{if(fallbackCollected.has(i))return;const gx=x*25,gy=z*9-78+Math.sin(t*2+i)*6;ctx.fillStyle=['#72fff1','#7abaff','#ffd66e','#d6a0ff','#80f2b0'][i];ctx.beginPath();ctx.moveTo(gx,gy-22);ctx.lineTo(gx+15,gy);ctx.lineTo(gx,gy+22);ctx.lineTo(gx-15,gy);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff';ctx.stroke()});
+ // Floating waypoint arrow appears only after all five crystals are earned.
+ if(got===5&&!ready){const dx=-px,dz=-7.15-pz,len=Math.hypot(dx,dz)||1,ax=px*25+(dx/len)*34,ay=pz*9-128+(dz/len)*18;
+   ctx.save();ctx.translate(ax,ay+Math.sin(t*4)*5);ctx.rotate(Math.atan2(dx,-dz));ctx.shadowColor='#ffe27a';ctx.shadowBlur=24;ctx.fillStyle='#ffe27a';ctx.strokeStyle='#fff8d7';ctx.lineWidth=2;
+   ctx.beginPath();ctx.moveTo(0,-23);ctx.lineTo(13,3);ctx.lineTo(4,0);ctx.lineTo(4,17);ctx.lineTo(-4,17);ctx.lineTo(-4,0);ctx.lineTo(-13,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+ }
  // Player
  ctx.fillStyle='#4968d8';ctx.beginPath();ctx.roundRect(px*25-12, pz*9-78,24,34,8);ctx.fill();ctx.fillStyle='#ffd0a8';ctx.beginPath();ctx.arc(px*25,pz*9-91,12,0,Math.PI*2);ctx.fill();
  ctx.restore();
