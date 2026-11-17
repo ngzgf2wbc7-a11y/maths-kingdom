@@ -161,3 +161,10 @@ test('each of the ten lands provides a Grade 7 concept explanation', () => {
   assert.ok(html.includes('id="concept"'));
   assert.ok(html.includes("$('#concept').textContent=(phase==='learn'||islandChallenge)?concepts[current]"));
 });
+
+
+test('2D fallback player movement also respects visible tree trunks', () => {
+  assert.ok(html.includes('const fallbackTreeColliders=['));
+  assert.ok(html.includes('fallbackTreeColliders.some(o=>Math.hypot(nextX-o.x,pz-o.z)<o.radius)'));
+  assert.ok(html.includes('fallbackTreeColliders.some(o=>Math.hypot(px-o.x,nextZ-o.z)<o.radius)'));
+});
