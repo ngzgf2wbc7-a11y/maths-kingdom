@@ -141,3 +141,14 @@ test('2D fallback movement uses the same radial boundary approach', () => {
   assert.ok(html.includes('pz=pz/islandEdge*8.1'));
   assert.ok(!html.includes('px=clamp(px+x/l*.12,-8,8)'));
 });
+
+
+test('3D island trees register player collision zones', () => {
+  assert.ok(html.includes('const treeColliders=[];'));
+  assert.ok(html.includes('treeColliders.push({x,z,radius:.62})'));
+});
+
+test('3D player movement checks tree collisions on both movement axes', () => {
+  assert.ok(html.includes('treeColliders.some(o=>Math.hypot(nextX-o.x,player.position.z-o.z)<o.radius)'));
+  assert.ok(html.includes('treeColliders.some(o=>Math.hypot(player.position.x-o.x,nextZ-o.z)<o.radius)'));
+});
