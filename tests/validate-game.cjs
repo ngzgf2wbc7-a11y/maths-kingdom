@@ -168,3 +168,16 @@ test('2D fallback player movement also respects visible tree trunks', () => {
   assert.ok(html.includes('fallbackTreeColliders.some(o=>Math.hypot(nextX-o.x,pz-o.z)<o.radius)'));
   assert.ok(html.includes('fallbackTreeColliders.some(o=>Math.hypot(px-o.x,nextZ-o.z)<o.radius)'));
 });
+
+test('clearing a land returns the player to the island with a portal for the next uncleared land', () => {
+  assert.match(html, /const nextLand=topics\.findIndex\(\(_,i\)=>!progress\[i\]\?\.quiz\)/);
+  assert.match(html, /if\(correct>=3\)\{const nextLand=topics\.findIndex/);
+  assert.match(html, /ready=true;\$\('#portal'\)\.disabled=false;\$\('#portal'\)\.textContent='Enter portal: '\+topics\[nextLand\]/);
+  assert.match(html, /\$\('#lesson'\)\.classList\.remove\('active'\);islandChallenge=false;active=false/);
+  assert.match(html, /A new portal to '\+topics\[nextLand\]\+' has appeared on the island\./);
+});
+
+test('the final cleared land ends the portal chain cleanly', () => {
+  assert.match(html, /All ten lands cleared — you are the Maths Kingdom champion!/);
+  assert.match(html, /\$\('#portal'\)\.textContent='Kingdom completed'/);
+});
