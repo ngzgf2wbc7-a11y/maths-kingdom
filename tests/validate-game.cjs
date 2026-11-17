@@ -92,7 +92,7 @@ test('mobile island canvas captures touch drags without page-scroll cancellation
 test('failed quiz can be retried and starts with a fresh learning attempt', () => {
   assert.ok(html.includes("function openLand(i){islandChallenge=false;current=i;level=0;phase='learn';correct=0;"));
   assert.ok(html.includes('Review the learning levels and try again to earn your star.'));
-  assert.ok(html.includes('progress[current]={practice:true,quiz:correct>=3,score:correct}'));
+  assert.ok(html.includes('progress[clearedLand]={practice:true,quiz:correct>=3,score:correct}'));
 });
 
 test('crystal challenge requires a correct answer before the claim button activates', () => {
