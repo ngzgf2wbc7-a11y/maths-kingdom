@@ -127,3 +127,17 @@ test('portal glow intensifies after unlocking and adds animated energy effects',
   assert.ok(html.includes('portalSparks.children.forEach'));
   assert.ok(html.includes("ctx.shadowBlur=got===5?34:18"));
 });
+
+test('3D player movement is constrained by a circular island boundary', () => {
+  assert.ok(html.includes('const islandEdge=Math.hypot(player.position.x,player.position.z);if(islandEdge>8.35)'));
+  assert.ok(html.includes('player.position.x=player.position.x/islandEdge*8.35'));
+  assert.ok(html.includes('player.position.z=player.position.z/islandEdge*8.35'));
+  assert.ok(!html.includes('player.position.x=clamp(player.position.x,-8.45,8.45)'));
+});
+
+test('2D fallback movement uses the same radial boundary approach', () => {
+  assert.ok(html.includes('const islandEdge=Math.hypot(px,pz);if(islandEdge>8.1)'));
+  assert.ok(html.includes('px=px/islandEdge*8.1'));
+  assert.ok(html.includes('pz=pz/islandEdge*8.1'));
+  assert.ok(!html.includes('px=clamp(px+x/l*.12,-8,8)'));
+});
