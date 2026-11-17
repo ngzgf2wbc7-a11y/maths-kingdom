@@ -82,3 +82,33 @@ test('browser module JavaScript passes the Node syntax parser', () => {
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+test('mobile island canvas captures touch drags without page-scroll cancellation', () => {
+  assert.match(html, /canvas\\{display:block;touch-action:none;/);
+  assert.match(html, /@media\\(max-width:600px\\)/);
+});
+
+test('failed quiz can be retried and starts with a fresh learning attempt', () => {
+  assert.match(html, /function openLand\\(i\\)\\{islandChallenge=false;current=i;level=0;phase='learn';correct=0;/);
+  assert.match(html, /Review the learning levels and try again to earn your star\\./);
+  assert.match(html, /progress\\[current\\]=\\{practice:true,quiz:correct>=3,score:correct\\}/);
+});
+
+test('crystal challenge requires a correct answer before the claim button activates', () => {
+  const checkHandler = html.slice(html.indexOf("$('#check').onclick"), html.indexOf("$('#next').onclick"));
+  assert.match(checkHandler, /if\\(selected===q\\[2\\]\\)[\\s\\S]*?$('#next')\\.disabled=false/);
+  assert.match(checkHandler, /else\\{\\$\('#feedback'\)\\.textContent=islandChallenge/);
+  assert.match(checkHandler, /if\\(!islandChallenge\\)\\{\\$\('#check'\)\\.disabled=true/);
+});
+
+test('both renderer modes only unlock the portal after five crystals', () => {
+  assert.match(html, /got===5&&Math\\.hypot\\(player\\.position\\.x,player\\.position\\.z\\+7\\.15\\)<2\\.2/);
+  assert.match(html, /got===5&&Math\\.hypot\\(px,pz\\+3\\)<2\\.2/);
+});
+
+test('restart clears crystal state and restores collected visuals', () => {
+  const reset = html.slice(html.indexOf('function resetIsland'), html.indexOf("$('#start').onclick"));
+  assert.match(reset, /got=0;ready=false;pendingCrystal=null;fallbackCollected\\.clear\\(\\)/);
+  assert.match(reset, /gemHalos\\.forEach\\(h=>h\\.visible=true\\)/);
+  assert.match(reset, /gems\\.forEach\\(g=>g\\.visible=true\\)/);
+});
