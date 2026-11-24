@@ -181,3 +181,12 @@ test('the final cleared land ends the portal chain cleanly', () => {
   assert.match(html, /All ten lands cleared — you are the Maths Kingdom champion!/);
   assert.match(html, /\$\('#portal'\)\.textContent='Kingdom completed'/);
 });
+
+test('land selection enforces the portal sequence while allowing completed lands to be replayed', () => {
+  assert.match(html, /const nextLand=topics\.findIndex\(\(_,i\)=>!progress\[i\]\?\.quiz\);\$\('#lands'\)\.innerHTML=topics\.map/);
+  assert.match(html, /locked=!p\.quiz&&i!==nextLand/);
+  assert.match(html, /disabled aria-label=/);
+  assert.match(html, /document\.querySelectorAll\('\[data-land\]:not\(:disabled\)'\)/);
+  assert.match(html, /if\(!Number\.isInteger\(i\)\|\|i<0\|\|i>=topics\.length\|\|\(!progress\[i\]\?\.quiz&&i!==nextLand\)\)return/);
+  assert.match(html, /\.land:disabled\{opacity:\.48/);
+});
