@@ -90,7 +90,7 @@ test('mobile island canvas captures touch drags without page-scroll cancellation
 });
 
 test('failed quiz can be retried and starts with a fresh learning attempt', () => {
-  assert.ok(html.includes("function openLand(i){islandChallenge=false;current=i;level=0;phase='learn';correct=0;"));
+  assert.match(html, /function openLand\(i\)\{const nextLand=topics\.findIndex[\s\S]*?islandChallenge=false;current=i;level=0;phase='learn';correct=0;/);
   assert.ok(html.includes('Review the learning levels and try again to earn your star.'));
   assert.ok(html.includes('progress[clearedLand]={practice:true,quiz:correct>=3,score:correct}'));
 });
@@ -112,6 +112,7 @@ test('restart clears crystal state and restores collected visuals', () => {
   assert.ok(reset.includes('got=0;ready=false;pendingCrystal=null;fallbackCollected.clear()'));
   assert.ok(reset.includes('gemHalos.forEach(h=>h.visible=true)'));
   assert.ok(reset.includes('gems.forEach(g=>g.visible=true)'));
+  assert.ok(reset.includes("$('#portal').textContent='Enter portal'"));
 });
 
 test('five crystals reveal a floating waypoint in both renderers', () => {
