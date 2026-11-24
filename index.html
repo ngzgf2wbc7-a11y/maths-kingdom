@@ -75,7 +75,7 @@ function resetIsland(){
  if(player)player.position.set(0,0,3.8);resetFallbackPosition();gemHalos.forEach(h=>h.visible=true);
  gems.forEach(g=>g.visible=true);
  $('#gems').textContent='💎 0 / 5 crystals';$('#status').textContent='Explore the meadow and find five crystals';
- $('#portal').disabled=true;$('#start').textContent='↻ Restart island';
+ $('#portal').disabled=true;$('#portal').textContent='Enter portal';$('#start').textContent='↻ Restart island';
 }
 $('#start').onclick=resetIsland;
 $('#portal').onclick=()=>{if(!ready)return;const nextLand=topics.findIndex((_,i)=>!progress[i]?.quiz);if(nextLand<0){ready=false;active=false;$('#portal').disabled=true;$('#portal').textContent='Kingdom completed';$('#status').textContent='All ten lands cleared — you are the Maths Kingdom champion!';document.querySelector('.section-title').scrollIntoView({behavior:'smooth'});return}ready=false;active=false;$('#portal').disabled=true;$('#portal').textContent='Enter portal';$('#status').textContent='Entering '+topics[nextLand]+'…';openLand(nextLand)};
